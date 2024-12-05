@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>郵便番号フォーム</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+      background-color: #d3caf8;
+    }
+
+    h3 {
+      color: #333;
+      place-self: center;
+      font-size: 30px;
+    }
+    
+
+    input[type="text"] {
+      width: 300px;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #check {
+      color: red;
+      font-size: 14px;
+      margin: 5px 0;
+    }
+
+    #form-container {
+      background: #d8e1f9;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      margin: auto;
+    }
+
+    #output {
+      margin-top: 10px;
+      padding: 25px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #e1f2f7;
+      max-width: 390px;
+      margin: auto;
+    }
+
+    /* 横一列に並べるためのスタイル */
+    .output-text {
+      display: flex;
+      justify-content: flex-start;
+      /* 左寄せに変更 */
+    }
+
+    .output-text span {
+      margin-right: 10px;
+      /* スペースを調整 */
+    }
+  </style>
+</head>
+
+<body>
+  <div id="form-container">
+    <h3>お申し込みフォーム</h3>
+    <p>郵便番号を入力してください</p>
+    <div>
+      <input type="text" id="searchBox" placeholder="例:1638001(ﾊｲﾌﾝなし)" onkeyup="inputCheck()">
+      <button type="button" onclick="searchAddress()">検索</button>
+    </div>
+    <div id="check"></div>
+    <p>住所：<input type="text" id="addressForm" readonly></p>
+    <p>番地：<input type="text" id="streetForm"></p>
+    <p>建物名：<input type="text" id="buildingForm"></p>
+    <button type="button" onclick="submitForm()">送信</button>
+  </div>
+  <br>
+  <div id="output"></div>
+
+  <script>
+    async function searchAddress() {
+      const postalCode = document.getElementById("searchBox").value;
+      if (postalCode.match(/^[0-9]{7}$/)) {
+        const url = 'https://zipcloud.ibsnet.co.jp/api/search?zipcode=' + postalCode;
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+          if (data.results) {
+            const address = data.results[0].address1 + data.results[0].address2 + data.results[0].address3;
+            document.getElementById("addressForm").value = address;
+            document.getElementById("check").innerHTML = '';
+          } else {
+            document.getElementById("check").innerHTML = '該当データなし';
+          }
+        } catch (error) {
+          document.getElementById("check").innerHTML = 'エラーが発生しました。もう一度お試しください。';
+        }
+      } else {
+        document.getElementById("check").innerHTML = '正しい郵便番号を入力してください。';
+      }
+    }
+
+    function inputCheck() {
+      const inputValue = document.getElementById("searchBox").value;
+      if (!(inputValue.match(/^[0-9]+$/)) || !(inputValue.length === 7)) {
+        document.getElementById("check").innerHTML = '半角数字7桁で入力してください！';
+      } else {
+        document.getElementById("check").innerHTML = '';
+      }
+    }
+
+    function submitForm() {
+      const address = document.getElementById("addressForm").value;
+      const street = document.getElementById("streetForm").value;
+      const building = document.getElementById("buildingForm").value;
+
+      const output = `${address}${street}${building}`;
+      document.getElementById("output").innerHTML = `<div class="output-text"><span>${output}</span></div>`;
+    }
+  </script>
+</body>
+
+</html>
